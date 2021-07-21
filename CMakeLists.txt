@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 3.0)
 
 project (autofix-mkcc
-    VERSION "0.0.1"
+    VERSION "1.0.0"
     LANGUAGES CXX
 )
 
