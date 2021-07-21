@@ -66,6 +66,18 @@ int main(int argc, char** argv) {
             // std::cout << "Fixing only \"ERROR\" entries...\n";        // debug line
             erronly = true;
         }
+        if (arg[{"-h", "--help"}]) {
+            std::cout << R"(    About:
+             "AutoFix mer-kernel-verify-config" provides automatisation to fix all warnings and errors from mer-kernel-verify-config.
+    Options: 
+             -v --verbose           Outputs every changed variable to give more clarity on the ongoing process.
+             -e --errors-only       The script will only fix ERROR entries from mer-kernel-verify-config
+             -t --target            Sets variable for the config that's to be checked, follof argument by "=" and type kernel config path.
+             -h --help              Outputs this command and quits.
+    Questions:
+             Follow my GitHub link to resolve issues: https://github.com/scriptSQD.
+            )" << std::endl;
+        }
     }
 
     std::string mkvc = ("mer_kcc/mer_verify_kernel_config " + targetConfig.string() + " > " + "mkvc_res.txt");
@@ -83,6 +95,9 @@ int main(int argc, char** argv) {
     std::smatch match;
 
     std::ifstream kernelCfg(targetConfig.string(), std::ios::in | std::ios::binary);
+    if (!kernelCfg.is_open()) {
+        fprintf(stderr, "Unable to open Kernel config file...\n");
+    }
     std::string cfg (std::istreambuf_iterator<char>(kernelCfg), std::istreambuf_iterator<char>{});
     cfg.append("\n");
     kernelCfg.close();
@@ -100,15 +115,19 @@ int main(int argc, char** argv) {
         }
         mkvcOut = match.suffix().str();
     }
-    std::cout << cfg << std::endl;
     if (!std::filesystem::exists("output")) {
         if (!std::filesystem::create_directory(std::filesystem::path("output"))) {
             fprintf(stderr, "Failed to create \"output\" directory...\n");
             return -1;
         }
     }
-    std::ofstream cfgOut((execPath / "output" / "defconfig").string(), std::ios::out | std::ios::binary);
-    cfgOut << cfg;
+    std::ofstream cfgOut((execPath / "output" / "defconfig_rename").string(), std::ios::out | std::ios::binary);
+    if(cfgOut.is_open()) {
+        cfgOut << cfg;
+    }
+    else {
+        fprintf(stderr, "Failed to create defconfig_rename...\n");
+    }
     cfgOut.close();
 
     return 0;
